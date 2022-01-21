@@ -34,57 +34,61 @@ const style = {
 }
 
 const Board = () => {
-  const [board, setBoard] = useState(Array(9).fill(null))
-  const [value, setValue] = useState('X')
+  const [state, dispath] = useReducer(reducer, )
+  // const [board, setBoard] = useState(Array(9).fill(null))
+  // const [value, setValue] = useState('X')
+  // const [message, setMessage] = useState('게임을 시작하세요')
 
 
-  const resetBoard = (value) => {
-    setBoard(Array(9).fill(null))
-    setValue('X')
-    showMessage(value)
+  const resetBoard = () => {
+    // setBoard(Array(9).fill(null))
+    // setValue('X')
+    dispatch('SET_BOARD', board: Array(9).fill(null))
+    dispatch('SET_VALUE', value: 'X')
   }
 
-  const showMessage = (value) => {
-    const message = value === 'X'
+  const showResult = () => {
+    const result = state.value === 'X'
       ? 'You\'r win'
       : 'You\'r loose';
-    alert(message)
+    alert(result)
   }
 
-  const isClicked = (board, name) => {
-    return !!board[name]
+  const isClicked = (name) => {
+    return !!state.board[name]
   }
 
-  const updateBoard = (board, name) => {
-    const boardCopied = board
-    boardCopied[name] = value
-
-    setBoard(boardCopied[name])
+  const updateBoard = (name) => {
+    const boardCopied = state.board;
+    boardCopied[name] = state.value;
+    dispatch('SET_BOARD',   board: boardCopied)
+    dispatch('SET_MESSAGE', message: `${state.value}님의 차례`)
+    // setBoard(boardCopied)
+    // setMessage(message)
   }
 
-  const changeTurn = (value) => {
-    const currentPlayer = value === 'X'
-      ? 'O'
-      : 'X';
-    
+  const changeTurn = () => {
+    const currentPlayer = state.value === 'X' ? 'O' : 'X';
     setValue(currentPlayer)
   }
 
   const onClick = (name) => {
-
-    if(isClicked(board, name)) return alert('이미 클릭했습니다')
+    if(isClicked(name)) return alert('이미 클릭했습니다')
 
     changeTurn(value)
-    updateBoard(board, name)
+    updateBoard(name)
     
-    if (isWin(board)) return resetBoard(value);
+    if (isWin(board)) return showResult(value);
   }
 
   return (
-    <div style={style}>
-      {
-        board.map((item, idx) => <BoardItem name={idx} key={idx} board={board} onClick={onClick} />)
-      }
+    <div>
+      <div>{ message }</div>
+      <div style={style}>
+        {
+          board.map((item, idx) => <BoardItem name={idx} key={idx} board={board} onClick={onClick} />)
+        }
+      </div>
     </div>
   )
 }
