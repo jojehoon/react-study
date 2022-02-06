@@ -1,27 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import axios from 'axios'
 
+function reducer(state, action) {
+  switch (action.type) {
+    case 'LOADING':
+      return {
+        loading: true,
+        data: null,
+        error: null
+      }
+    case 'SUCCESS':
+      return {
+        loading: false,
+        data: action.data,
+        error: null
+      }
+    case 'ERROR':
+      return {
+        loading: false,
+        data: null,
+        error: action.error
+      }
+    default:
+      throw new Error(`unhandled action type ${action.type} `)
+  }
+}
+
+async function getUsers() {
+  const response = await axios.get('https://jsonplaceholder.typicode.com/users/')
+  return response.data
+}
+
+async function getUser(id) {
+  const response = await axios.get(`https://jsonplaceholder.typicode.com/users/{id}`)
+  return response.data
+}
+
+function User() {
+  const [state, dispatch] = useReducer(reducer, {
+    
+  })
+}
+
 function Users() {
-  const [users, setUsers] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [state, dispatch] = useReducer(reducer, {
+    loading: false,
+    data: null,
+    error: null,
+  })
+
+  const { loading, data: users, error } = state;
 
   const fetchUsers = async () => {
+    dispatch({ type: 'LOADING', loadgin: true })
     try {
-      // 요청 시작할 때는 error, users 초기화
-      setError(null)
-      setUsers(null)
-
-      // loading 시작
-      setLoading(true)
-      const response = await axios.get('https://jsonplaceholder.typicode.com/users')
-      setUsers(response.data)
-    }catch(e) {
-      setError(e)
+      const data = await getUsers()
+      dispatch({ type: 'SUCCESS', data })
+    }catch(error) {
+      dispatch({ type: 'ERROR', error })
     }
-
-    // loading 종료
-    setLoading(false)
   }
 
   useEffect(() => {
@@ -36,7 +73,9 @@ function Users() {
     <div>
       <ul>
         {
-          users.map(user => <li key={user.id}>{ user.username } ({ user.name })</li>)
+          users.map(user => (
+            <li key={ user.id }>{ user.username } ({ user.name })</li>
+          ))
         }
       </ul>
       <button onClick={ fetchUsers }>다시 불러오기</button>
